@@ -7,6 +7,8 @@ from nltk.tokenize import sent_tokenize
 import numpy as np
 import sys
 import re
+import nltk
+nltk.download('all')
 
 def load_dataset(img_path, txt_path, img_shape=(64, 64, 3), split_rate=0.1):
 	"""
@@ -63,13 +65,13 @@ def load_dataset(img_path, txt_path, img_shape=(64, 64, 3), split_rate=0.1):
 	image_list = np.array(image_list)
 	caption_list = np.array(caption_list)
 	numbers = np.array(numbers)
-	print('>>> Dataset Size: %s' % len(image_list))
+	print('>>> Dataset Size image_list: %s' % len(image_list))
 	image_train, image_test, caption_train, caption_test, numbers_train, numbers_test = train_test_split(image_list, caption_list, numbers, test_size=split_rate)
 
 	return image_train, caption_train, image_test, caption_test, numbers_train
     
 if __name__ == '__main__':
 	img_size = (64, 64, 3)
-	img_path = '../emoji/edited/emoji_64x64/'
+	img_path = '../emoji/edited/'
 	txt_path = '../emoji/description/detailed/'
 	load_dataset(img_path, txt_path, img_size)

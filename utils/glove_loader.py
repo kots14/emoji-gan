@@ -3,7 +3,6 @@ import os
 import zipfile
 import numpy as np
 
-"""
 def download_glove(data_dir_path, to_file_path):
     if not os.path.exists(to_file_path):
         if not os.path.exists(data_dir_path):
@@ -20,7 +19,6 @@ def download_glove(data_dir_path, to_file_path):
         zip_ref = zipfile.ZipFile(glove_zip, 'r')
         zip_ref.extractall('very_large_data')
         zip_ref.close()
-"""
 
 def load_glove(data_dir_path=None, embedding_dim=None):
     """
@@ -32,9 +30,9 @@ def load_glove(data_dir_path=None, embedding_dim=None):
     if embedding_dim is None:
         embedding_dim = 300
 
-    # glove_file_path = data_dir_path + "/glove.6B." + str(embedding_dim) + "d.txt"
+    glove_file_path = data_dir_path + "/glove.6B." + str(embedding_dim) + "d.txt"
     glove_file_path = data_dir_path
-    # download_glove(data_dir_path, glove_file_path)
+    download_glove(data_dir_path, glove_file_path)
     _word2em = {}
     file = open(glove_file_path, mode='rt', encoding='utf8')
     for line in file:

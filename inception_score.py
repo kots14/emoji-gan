@@ -121,13 +121,13 @@ def dataset_inception(x_train):
 if __name__ == '__main__':
     scores = []
     img_size = (64, 64, 3)
-    img_path = './emoji/edited/emoji_64x64/'
+    img_path = './emoji/edited/'
     txt_path = './emoji/description/detailed'
     glove_path = './utils/glove.6B.300d.txt'
 
     if len(sys.argv) == 3:
         # emoji gan
-        x_train, y_train, _, _, _ = load_dataset_gan(img_path, txt_path, img_size, split_rate=0.0)
+        x_train, y_train, _, _, _ = load_dataset_gan(img_path, txt_path, img_size, split_rate=0.01)
         print('Complete data loading!')
 
         original_score = dataset_inception(x_train)

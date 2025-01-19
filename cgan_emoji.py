@@ -2,34 +2,43 @@ from __future__ import print_function, division
 
 from keras.layers import Input, Dense, Reshape, Flatten, Dropout, concatenate
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
-from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.layers import LeakyReLU, UpSampling2D, Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from keras import backend as K
 from keras.layers import Lambda
-from utils.glove_loader import GloveModel
+
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.dataset_utils import load_dataset
+
 from PIL import Image
 import math
 import pandas as pd
 import sys
 import time
 
+import urllib.request
+import os
+import zipfile
+from utils.glove_loader import GloveModel
+from utils.dataset_utils import load_dataset
+
+from tensorflow.python.keras import backend as K
+
+
 # GPU setting
 import tensorflow as tf
-from keras.backend.tensorflow_backend import set_session
-config = tf.ConfigProto(
-            gpu_options = tf.GPUOptions(
-                visible_device_list="2", # specify GPU number
-                allow_growth=True)
-        )
-set_session(tf.Session(config=config))
 
+config = tf.compat.v1.ConfigProto(
+        gpu_options = tf.compat.v1.GPUOptions(
+                            per_process_gpu_memory_fraction=1,
+                                            allow_growth=True)
+                            )
+
+sess = tf.compat.v1.Session(config=config)
+K.set_session(sess)
 
 class DCGAN():
     def __init__(self, img_path, txt_path, glove_path):
@@ -224,26 +233,27 @@ class DCGAN():
                 texts = self.glove_model.encode_docs(texts_input)
                 self.save_imgs(epoch, texts)
 
-                self.generator.save_weights(filepath='./saved_model/generator_weights_' + str(epoch) + '.h5')
-                self.discriminator.save_weights(filepath='./saved_model/discriminator_weights_' + str(epoch) + '.h5')
+                self.generator.save_weights(filepath='./saved_model/generator_weights_' + str(epoch) + '.weights.h5')
+                self.discriminator.save_weights(filepath='./saved_model/discriminator_weights_' + str(epoch) + '.weights.h5')
         
         # save weights & history
         df_train = pd.DataFrame(history, columns=['epoch', 'batch', 'd_loss', 'acc', 'g_loss', 'time[sec]'])
         df_train.to_csv('./saved_model/history.csv')
         df_test = pd.DataFrame(history_test, columns=['epoch', 'd_loss', 'acc', 'g_loss', 'time[sec]'])
         df_test.to_csv('./saved_model/history_test.csv')
-        self.generator.save_weights(filepath='./saved_model/generator_weights.h5')
-        self.discriminator.save_weights(filepath='./saved_model/discriminator_weights.h5')
+        self.generator.save_weights(filepath='./saved_model/generator_weights.weights.h5')
+        self.discriminator.save_weights(filepath='./saved_model/discriminator_weights.weights.h5')
 
     def save_imgs(self, epoch, texts, batch_size=26):
         noise = np.random.normal(0, 1, (batch_size, self.latent_dim))
-        if batch_size == 260:
-            texts = self.glove_model.encode_docs(texts)
+        # if batch_size == 260:
+            
+        texts = self.glove_model.encode_docs(texts)
         gen_imgs = self.generator.predict([noise, texts])
         gen_img = combine_normalized_images(gen_imgs)
         img_from_normalized_img(gen_img).save("images/snapshot/%d.png" % epoch)
     
-    def load_model(self, gen_path='./saved_model/generator_weights.h5', dis_path='./saved_model/discriminator_weights.h5'):
+    def load_model(self, gen_path='./saved_model/generator_weights.weights.h5', dis_path='./saved_model/discriminator_weights.weights.h5'):
         """
         Function: load_model  
         This function loads a pre-trained model.  
@@ -294,12 +304,12 @@ def img_from_normalized_img(normalized_img):
 
 def generate_mode():
     img_size = (64, 64, 3)
-    img_path = './emoji/edited/emoji_64x64/'
+    img_path = './emoji/edited/'
     txt_path = './emoji/description/detailed'
     glove_path = './utils/glove.6B.300d.txt'
 
     dcgan = DCGAN(img_path, txt_path, glove_path)
-    X_train, Captions, _, _, _ = load_dataset(img_path, txt_path, img_size, split_rate=0.0)
+    X_train, Captions, _, _, _ = load_dataset(img_path, txt_path, img_size, split_rate=0.01)
     print('Loading model...')
     dcgan.load_model()
 
@@ -319,11 +329,11 @@ def generate_mode():
     df.to_csv('./images/caption.csv')
 
     # plot all emojis
-    dcgan.save_imgs(epoch=5000, texts=Captions, batch_size=260)
+    dcgan.save_imgs(epoch=5000, texts=Captions, batch_size=len(df.index))
     print('Done!')
 
 def train_mode():
-    img_path = './emoji/edited/emoji_64x64/'
+    img_path = './emoji/edited/'
     txt_path = './emoji/description/detailed'
     glove_path = './utils/glove.6B.300d.txt'
 

@@ -1,0 +1,16 @@
+keras
+git+https://www.github.com/keras-team/keras-contrib.git
+matplotlib
+numpy
+scipy
+pillow
+scikit-image
+scikit-learn
+nltk
+pandas
+opencv-python
+#tensorflow
+#tensorflow[and-cuda]
+torch
+torchvision
+transformers
